@@ -1,15 +1,30 @@
+import logging
 
+fh = logging.FileHandler(filename='craigs.log')
+logging.basicConfig(level=logging.INFO, handlers=fh)
+logger = logging.getLogger(__name__)
+
+def record_meta(spider):
+    """dynamically fills dictionary with result-meta from each listing"""
+    pass
 
 class CraigslistBase(object):
-    """ Base class for all Craiglist wrappers. """
+    """ Base class for all Craiglist wrappers. Retrieve all metadata for given filters"""
+
+    def __init__(self):
+        self.url
+        self.id
+        self.title
+        self.meta = record_meta()
 
     url_templates = {
-        'base': 'http://%(site)s.craigslist.org',
-        'no_area': 'http://%(site)s.craigslist.org/search/%(category)s',
-        'area': 'http://%(site)s.craigslist.org/search/%(area)s/%(category)s'
+        'base': 'http://{site}.craigslist.org',
+        'no_area': 'http://{site}.craigslist.org/search/{category}',
+        'area': 'http://{site}.craigslist.org/search/{area}/{category}'
     }
 
     default_site = 'sfbay'
+
     default_category = None
 
     base_filters = {
@@ -30,3 +45,5 @@ class CraigslistBase(object):
         'price_asc': 'priceasc',
         'price_desc': 'pricedsc',
     }
+
+class CraigslistHousing(CraigslistBase):

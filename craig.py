@@ -14,13 +14,32 @@ class CraigslistBase(object):
     """ Base class for all Craiglist wrappers. Retrieve all metadata for given filters"""
 
     def __init__(self, site=None, area=None, category=None, filters=None):
-
         #self.url
         #self.id
         #self.title
         self.sites_url = 'http://www.craigslist.org/about/sites'
+        self.url_templates = {
+                                'base': 'http://{site}.craigslist.org',
+                                'no_area': 'http://{site}.craigslist.org/search/{category}',
+                                'area': 'http://{site}.craigslist.org/search/{area}/{category}'
+                            }
+        self.base_filters = {
+                                'query': {'url_key': 'query', 'value': None},
+                                'search_titles': {'url_key': 'srchType', 'value': 'T'},
+                                'has_image': {'url_key': 'hasPic', 'value': 1},
+                                'posted_today': {'url_key': 'postedToday', 'value': 1},
+                                'search_distance': {'url_key': 'search_distance', 'value': None},
+                                'zip_code': {'url_key': 'postal', 'value': None},
+                            }
+        # implement later if needed
+        # self.sort_by_options = {
+        #     'newest': 'date',
+        #     'price_asc': 'priceasc',
+        #     'price_desc': 'pricedsc',
+        # }
+
         self.all_sites = self.get_all_sites()
-        self.meta = record_meta()
+        #self.meta = record_meta()
         self.category = category
 
         if self.site not in self.all_sites:
@@ -32,7 +51,7 @@ class CraigslistBase(object):
         if area:
             if not self.is_valid_area(area):
                 msg = "'%s' is not a valid area for site '%s'" % (area, site)
-                self.logger.error(msg)
+                logger.error(msg)
                 raise ValueError(msg)
         self.area = area
 
@@ -59,35 +78,9 @@ class CraigslistBase(object):
 
         return sites
 
-    url_templates = {
-        'base': 'http://{site}.craigslist.org',
-        'no_area': 'http://{site}.craigslist.org/search/{category}',
-        'area': 'http://{site}.craigslist.org/search/{area}/{category}'
-    }
 
 
 
-    default_site = 'sfbay'
 
-    default_category = None
-
-    base_filters = {
-        'query': {'url_key': 'query', 'value': None},
-        'search_titles': {'url_key': 'srchType', 'value': 'T'},
-        'has_image': {'url_key': 'hasPic', 'value': 1},
-        'posted_today': {'url_key': 'postedToday', 'value': 1},
-        'search_distance': {'url_key': 'search_distance', 'value': None},
-        'zip_code': {'url_key': 'postal', 'value': None},
-    }
-    extra_filters = {}
-
-    # Set to True to subclass defines the customize_results() method
-    custom_result_fields = False
-
-    sort_by_options = {
-        'newest': 'date',
-        'price_asc': 'priceasc',
-        'price_desc': 'pricedsc',
-    }
 
 class CraigslistHousing(CraigslistBase):

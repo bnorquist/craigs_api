@@ -15,10 +15,7 @@ def record_meta(spider):
 class CraigslistBase(object):
     """ Base class for all Craiglist wrappers. Retrieve all metadata for given filters"""
 
-    def __init__(self, site, area, category=None, filters=None):
-        #self.url
-        #self.id
-        #self.title
+    def __init__(self, site, area=None, category=None, filters=None):
         self.sites_url = 'http://www.craigslist.org/about/sites'
         self.url_templates = {
                                 'base': 'http://{site}.craigslist.org',
@@ -35,9 +32,8 @@ class CraigslistBase(object):
                             }
 
         self.site = self.is_valid_site(site)
-        self.area = self.is_valid_area(area)
+        self.area = [self.is_valid_area(area) if area is not None else None]
         self.category = category
-        
 
     def is_valid_area(self, area):
         """Check if area is valid and exists"""
@@ -76,7 +72,14 @@ class CraigslistBase(object):
         return sites
 
     def create_request(self):
-        pass
+        url_template = self.url_templates['area' if self.area is not None else 'no_area']
+        url_settings = {'site': self.site, 'area': self.area, 'category': self.category}
+        # construct url with input parameters
+        url = url_template.format(**url_settings)
+
+        response = requests.get(url=url, params=self.filters)
+        logger.debug("Craig's response: {}".format(response.url))
+        logger.debug("Craig's status code: {}".format(response.status_code))
 
     # implement later if needed
     # self.sort_by_options = {

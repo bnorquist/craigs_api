@@ -6,14 +6,16 @@ fh = logging.FileHandler(filename='craigs.log')
 logging.basicConfig(level=logging.INFO, handlers=fh)
 logger = logging.getLogger(__name__)
 
+
 def record_meta(spider):
     """dynamically fills dictionary with result-meta from each listing"""
     pass
 
+
 class CraigslistBase(object):
     """ Base class for all Craiglist wrappers. Retrieve all metadata for given filters"""
 
-    def __init__(self, site=None, area=None, category=None, filters=None):
+    def __init__(self, site, area, category=None, filters=None):
         #self.url
         #self.id
         #self.title
@@ -31,38 +33,33 @@ class CraigslistBase(object):
                                 'search_distance': {'url_key': 'search_distance', 'value': None},
                                 'zip_code': {'url_key': 'postal', 'value': None},
                             }
-        # implement later if needed
-        # self.sort_by_options = {
-        #     'newest': 'date',
-        #     'price_asc': 'priceasc',
-        #     'price_desc': 'pricedsc',
-        # }
 
-        self.all_sites = self.get_all_sites()
-        #self.meta = record_meta()
+        self.site = self.is_valid_site(site)
+        self.area = self.is_valid_area(area)
         self.category = category
-
-        if self.site not in self.all_sites:
-            msg = "{} is not a valid site".format(self.site)
-            logger.error(msg)
-            raise ValueError(msg)
-        self.site = site
-
-        if area:
-            if not self.is_valid_area(area):
-                msg = "'%s' is not a valid area for site '%s'" % (area, site)
-                logger.error(msg)
-                raise ValueError(msg)
-        self.area = area
-
+        
 
     def is_valid_area(self, area):
-        """Check if area is valid"""
+        """Check if area is valid and exists"""
         base_url = self.url_templates['base']
         response = requests.get(base_url.format({'site': self.site}))
         soup = BeautifulSoup(response.content, 'html.parser')
         sublinks = soup.find('ul', {'class': 'sublinks'})
-        return sublinks and sublinks.find('a', text=area) is not None
+        if sublinks and sublinks.find('a', text=area) is not None:
+            return area
+        else:
+            msg = "{} is not a valid area for site {}".format(area, self.site)
+            logger.error(msg)
+            raise ValueError(msg)
+
+    def is_valid_site(self, site):
+        """Check if site is valid and exists"""
+        all_sites = self.get_all_sites()
+        if site in all_sites:
+            logger.info('valid site detected ({})'.format(site))
+            return site
+        else:
+            logger.debug('site not valid ({})'.format(site))
 
     def get_all_sites(self):
         response = requests.get(self.sites_url)
@@ -78,9 +75,16 @@ class CraigslistBase(object):
 
         return sites
 
+    def create_request(self):
+        pass
 
-
-
-
+    # implement later if needed
+    # self.sort_by_options = {
+    #     'newest': 'date',
+    #     'price_asc': 'priceasc',
+    #     'price_desc': 'pricedsc',
+    # }
+    # self.meta = record_meta()
 
 class CraigslistHousing(CraigslistBase):
+    pass
